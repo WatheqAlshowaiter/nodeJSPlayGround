@@ -10,7 +10,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "mongoose": "^5.11.12",
+    "trivia-sum": "^1.1.0",
     "underscore": "^1.12.0"
+  },
+  "devDependencies": {
+    "jshint": "^2.12.0"
   }
 }

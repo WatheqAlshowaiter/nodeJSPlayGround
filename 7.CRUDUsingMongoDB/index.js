@@ -6,24 +6,70 @@ mongoose
 	.catch((err) => console.log("Can not connect db..", err));
 
 const courseSchema = mongoose.Schema({
-	name: String,
+	name: {
+		type: String,
+		required: true,
+		minLength: 3,
+		maxLength: 255,
+		// match: /pattern/,
+	},
+	category: {
+		type: String,
+		required: true,
+		enum: ["mobile", "web", "desktop"],
+		lowercase: true,
+		trim: true,
+	},
 	author: String,
-	tags: [String],
+	tags: {
+		type: Array,
+		validate: {
+			isAsync: true,
+			validator: function (v, callback) {
+				setTimeout(() => {
+					const result = v && v.length > 0;
+					callback(result);
+				}, 4000);
+			},
+			message: "A course should have at least one tag",
+		},
+	},
 	date: { type: Date, default: Date.now },
-	isPublished: Boolean,
+	isPublished: { type: Boolean, required: true },
+	price: {
+		type: Number,
+		required: function () {
+			return this.isPublished;
+		},
+		min: 10,
+		max: 200,
+		get: (v) => Math.round(v),
+		set: (v) => Math.round(v),
+	},
 });
 
 const Course = mongoose.model("Course", courseSchema);
 
 async function createCourse() {
 	const course = new Course({
-		name: "CS50",
-		author: "Harvard",
-		tags: ["C", "DS", "Pyhon", "SQL"],
+		name: "Intro to Laravel",
+		category: "Web",
+		author: "Hamed",
+		tags: ["backend"],
 		isPublished: true,
+		price: 20.5,
+		
 	});
-	const result = await course.save();
-	console.log(result);
+	try {
+		// await course.validate((err) => (err ? console.log(err) : ""));
+		const result = await course.save();
+		console.log(result);
+	} catch (ex) {
+		// console.log(ex.message);
+		for (field in ex.errors) {
+			console.log(ex.errors[field].message);
+		}
+	}
 }
 
 // createCourse();
@@ -69,3 +115,5 @@ async function removeCourse(id) {
 }
 
 // removeCourse("603646498cbf2a0f3b909ef9");
+
+createCourse();
